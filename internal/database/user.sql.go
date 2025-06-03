@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const createUser = `-- name: CreateUser :one
+const createUser = `-- name: CreateUser :exec
 ;
 
 INSERT INTO user (
@@ -23,11 +23,9 @@ INSERT INTO user (
     password,
     phone_number,
     birth_date,
-    created_at,
-    updated_at
+    role
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-RETURNING id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
@@ -40,12 +38,11 @@ type CreateUserParams struct {
 	Password    string
 	PhoneNumber string
 	BirthDate   string
-	CreatedAt   string
-	UpdatedAt   string
+	Role        int64
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser,
 		arg.ID,
 		arg.Firstname,
 		arg.Lastname,
@@ -55,47 +52,55 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Password,
 		arg.PhoneNumber,
 		arg.BirthDate,
-		arg.CreatedAt,
-		arg.UpdatedAt,
+		arg.Role,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Firstname,
-		&i.Lastname,
-		&i.Username,
-		&i.Alias,
-		&i.Email,
-		&i.Password,
-		&i.PhoneNumber,
-		&i.BirthDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
 UPDATE user SET 
-    deleted_at = ?
+    deleted_at = CURRENT_TIMESTAMP
 WHERE id = ?
 `
 
-type DeleteUserParams struct {
-	DeletedAt sql.NullString
-	ID        string
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
 }
 
-func (q *Queries) DeleteUser(ctx context.Context, arg DeleteUserParams) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, arg.DeletedAt, arg.ID)
-	return err
+const getEmail = `-- name: GetEmail :one
+;
+
+select email
+from user
+where user.email = ?
+`
+
+func (q *Queries) GetEmail(ctx context.Context, email string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getEmail, email)
+	err := row.Scan(&email)
+	return email, err
+}
+
+const getPhoneNumber = `-- name: GetPhoneNumber :one
+;
+
+select phone_number
+from user
+where user.phone_number = ?
+`
+
+func (q *Queries) GetPhoneNumber(ctx context.Context, phoneNumber string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getPhoneNumber, phoneNumber)
+	var phone_number string
+	err := row.Scan(&phone_number)
+	return phone_number, err
 }
 
 const getUser = `-- name: GetUser :one
 ;
 
-select id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
+select id, firstname, lastname, username, alias, email, password, phone_number, birth_date, role, created_at, updated_at, deleted_at
 from user
 where user.email = ? or user.username = ?
 `
@@ -118,6 +123,7 @@ func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (User, error) 
 		&i.Password,
 		&i.PhoneNumber,
 		&i.BirthDate,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -126,7 +132,7 @@ func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (User, error) 
 }
 
 const getUserById = `-- name: GetUserById :one
-select id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
+select id, firstname, lastname, username, alias, email, password, phone_number, birth_date, role, created_at, updated_at, deleted_at
 from user
 where user.id = ?
 `
@@ -144,6 +150,7 @@ func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
 		&i.Password,
 		&i.PhoneNumber,
 		&i.BirthDate,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -151,83 +158,62 @@ func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
 	return i, err
 }
 
-const updateEmail = `-- name: UpdateEmail :one
+const getUsername = `-- name: GetUsername :one
+;
+
+select username
+from user
+where user.username = ?
+`
+
+func (q *Queries) GetUsername(ctx context.Context, username string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getUsername, username)
+	err := row.Scan(&username)
+	return username, err
+}
+
+const updateEmail = `-- name: UpdateEmail :exec
 UPDATE user SET
     email = ?,
-    updated_at = ?
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
-RETURNING id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
 `
 
 type UpdateEmailParams struct {
-	Email     string
-	UpdatedAt string
-	ID        string
+	Email string
+	ID    string
 }
 
-func (q *Queries) UpdateEmail(ctx context.Context, arg UpdateEmailParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateEmail, arg.Email, arg.UpdatedAt, arg.ID)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Firstname,
-		&i.Lastname,
-		&i.Username,
-		&i.Alias,
-		&i.Email,
-		&i.Password,
-		&i.PhoneNumber,
-		&i.BirthDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+func (q *Queries) UpdateEmail(ctx context.Context, arg UpdateEmailParams) error {
+	_, err := q.db.ExecContext(ctx, updateEmail, arg.Email, arg.ID)
+	return err
 }
 
-const updatePassword = `-- name: UpdatePassword :one
+const updatePassword = `-- name: UpdatePassword :exec
 UPDATE user SET
     password = ?,
-    updated_at = ?
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
-RETURNING id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
 `
 
 type UpdatePasswordParams struct {
-	Password  string
-	UpdatedAt string
-	ID        string
+	Password string
+	ID       string
 }
 
-func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updatePassword, arg.Password, arg.UpdatedAt, arg.ID)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Firstname,
-		&i.Lastname,
-		&i.Username,
-		&i.Alias,
-		&i.Email,
-		&i.Password,
-		&i.PhoneNumber,
-		&i.BirthDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updatePassword, arg.Password, arg.ID)
+	return err
 }
 
-const updateUser = `-- name: UpdateUser :one
+const updateUser = `-- name: UpdateUser :exec
 UPDATE user SET
     firstname = ?,
     lastname = ?,
     alias = ?,
     birth_date = ?,
-    updated_at = ?
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
-RETURNING id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
 `
 
 type UpdateUserParams struct {
@@ -235,67 +221,33 @@ type UpdateUserParams struct {
 	Lastname  string
 	Alias     sql.NullString
 	BirthDate string
-	UpdatedAt string
 	ID        string
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.Firstname,
 		arg.Lastname,
 		arg.Alias,
 		arg.BirthDate,
-		arg.UpdatedAt,
 		arg.ID,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Firstname,
-		&i.Lastname,
-		&i.Username,
-		&i.Alias,
-		&i.Email,
-		&i.Password,
-		&i.PhoneNumber,
-		&i.BirthDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	return err
 }
 
-const updateUsername = `-- name: UpdateUsername :one
+const updateUsername = `-- name: UpdateUsername :exec
 UPDATE user SET
     username = ?,
-    updated_at = ?
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
-RETURNING id, firstname, lastname, username, alias, email, password, phone_number, birth_date, created_at, updated_at, deleted_at
 `
 
 type UpdateUsernameParams struct {
-	Username  string
-	UpdatedAt string
-	ID        string
+	Username string
+	ID       string
 }
 
-func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsername, arg.Username, arg.UpdatedAt, arg.ID)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Firstname,
-		&i.Lastname,
-		&i.Username,
-		&i.Alias,
-		&i.Email,
-		&i.Password,
-		&i.PhoneNumber,
-		&i.BirthDate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) error {
+	_, err := q.db.ExecContext(ctx, updateUsername, arg.Username, arg.ID)
+	return err
 }

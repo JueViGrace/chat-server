@@ -47,6 +47,7 @@ type User struct {
 	Password    string
 	PhoneNumber string
 	BirthDate   string
+	Role        int64
 	CreatedAt   string
 	UpdatedAt   string
 	DeletedAt   sql.NullString

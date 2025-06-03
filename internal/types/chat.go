@@ -5,15 +5,15 @@ import (
 )
 
 type Chat struct {
-	ID       uuid.UUID    `json:"id"`
-	Name     string       `json:"name"`
-	Icon     string       `json:"icon"`
-	Type     ChatType     `json:"type"`
-	Messages []Message    `json:"messages"`
-	Members  []ChatMember `json:"members"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Icon     string    `json:"icon"`
+	Type     ChatType  `json:"type"`
+	Messages []Message `json:"messages"`
+	Members  []Member  `json:"members"`
 }
 
-type ChatMember struct {
+type Member struct {
 	User User     `json:"user"`
 	Role ChatRole `json:"role"`
 }
@@ -30,17 +30,41 @@ type Message struct {
 type ChatRole int
 
 const (
-	Owner ChatRole = iota
-	Admin
-	Member
+	ChatMember ChatRole = iota
+	ChatAdmin
+	ChatOwner
 )
+
+func (c ChatRole) String() string {
+	switch c {
+	case ChatOwner:
+		return "ChatOwner"
+	case ChatAdmin:
+		return "ChatAdmin"
+	case ChatMember:
+		return "ChatMember"
+	default:
+		return "Unknown"
+	}
+}
 
 type ChatType int
 
 const (
-	Group ChatType = iota
-	Private
+	PrivateChat ChatType = iota
+	GroupChat
 )
+
+func (c ChatType) String() string {
+	switch c {
+	case GroupChat:
+		return "GroupChat"
+	case PrivateChat:
+		return "PrivateChat"
+	default:
+		return "Unknown"
+	}
+}
 
 type MessageType int
 
@@ -49,3 +73,16 @@ const (
 	Image
 	Sticker
 )
+
+func (c MessageType) String() string {
+	switch c {
+	case Text:
+		return "Text"
+	case Image:
+		return "Image"
+	case Sticker:
+		return "Sticker"
+	default:
+		return "Unknown"
+	}
+}

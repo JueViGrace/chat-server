@@ -9,7 +9,7 @@ type ChatStore interface {
 }
 
 func (s *storage) ChatStore() ChatStore {
-	return NewAuthStore(s.ctx, s.queries)
+	return NewChatStore(s.ctx, s.queries)
 }
 
 type chatStore struct {

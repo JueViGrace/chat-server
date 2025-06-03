@@ -11,13 +11,14 @@ import (
 func (a *api) registerRoutes() {
 	api := a.Group("/api")
 
-	api.Get("/health", a.healthRoute)
-	api.Get("/metrics", monitor.New(monitor.Config{
+	api.Get("/health", a.adminAuthMiddleware, a.healthRoute)
+	api.Get("/metrics", a.adminAuthMiddleware, monitor.New(monitor.Config{
 		Refresh: time.Duration(time.Second),
 	}))
 
 	a.authRoutes(api)
 	a.chatRoutes(api)
+	a.userRoutes(api)
 }
 
 func (a *api) healthRoute(c *fiber.Ctx) error {

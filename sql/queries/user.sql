@@ -10,7 +10,25 @@ from user
 where user.email = ? or user.username = ?
 ;
 
--- name: CreateUser :one
+-- name: GetEmail :one
+select email
+from user
+where user.email = ?
+;
+
+-- name: GetUsername :one
+select username
+from user
+where user.username = ?
+;
+
+-- name: GetPhoneNumber :one
+select phone_number
+from user
+where user.phone_number = ?
+;
+
+-- name: CreateUser :exec
 INSERT INTO user (
     id,
     firstname,
@@ -21,45 +39,39 @@ INSERT INTO user (
     password,
     phone_number,
     birth_date,
-    created_at,
-    updated_at
+    role
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-RETURNING *;
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
--- name: UpdateUser :one
+-- name: UpdateUser :exec
 UPDATE user SET
     firstname = ?,
     lastname = ?,
     alias = ?,
     birth_date = ?,
-    updated_at = ?
-WHERE id = ?
-RETURNING *;
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
 
--- name: UpdateEmail :one
+-- name: UpdateEmail :exec
 UPDATE user SET
     email = ?,
-    updated_at = ?
-WHERE id = ?
-RETURNING *;
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
 
--- name: UpdateUsername :one
+-- name: UpdateUsername :exec
 UPDATE user SET
     username = ?,
-    updated_at = ?
-WHERE id = ?
-RETURNING *;
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
 
--- name: UpdatePassword :one
+-- name: UpdatePassword :exec
 UPDATE user SET
     password = ?,
-    updated_at = ?
-WHERE id = ?
-RETURNING *;
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
 
 -- name: DeleteUser :exec
 UPDATE user SET 
-    deleted_at = ?
+    deleted_at = CURRENT_TIMESTAMP
 WHERE id = ?;
 

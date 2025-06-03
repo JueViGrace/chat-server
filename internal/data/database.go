@@ -21,6 +21,7 @@ type Storage interface {
 	Close() error
 	AuthStore() AuthStore
 	ChatStore() ChatStore
+	UserStore() UserStore
 }
 
 type storage struct {

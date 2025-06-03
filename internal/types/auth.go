@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql"
 	"gps-tracker/internal/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,7 @@ type Session struct {
 	AccessToken  string
 	RefreshToken string
 	UserID       uuid.UUID
+	Role         Role
 }
 
 type AuthResponse struct {
@@ -29,7 +31,8 @@ type SignInRequest struct {
 type SignUpRequest struct {
 	FirstName   string `json:"first_name" validate:"required"`
 	LastName    string `json:"last_name" validate:"required"`
-	Username    string `json:"username"`
+	Username    string `json:"username" validate:"required"`
+	Alias       string `json:"alias"`
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required"`
 	PhoneNumber string `json:"phone_number" validate:"required"`
@@ -46,9 +49,43 @@ func DbSessionToSession(db *database.Session) (*Session, error) {
 		return nil, err
 	}
 
+	userId, err := uuid.Parse(db.UserID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Session{
 		ID:           id,
 		AccessToken:  db.AccessToken,
 		RefreshToken: db.RefreshToken,
+		UserID:       userId,
+	}, nil
+}
+
+func CreateUser(r *SignUpRequest) (*database.CreateUserParams, error) {
+	userId, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	encPass, err := HashPassword(r.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return &database.CreateUserParams{
+		ID:        userId.String(),
+		Firstname: r.FirstName,
+		Lastname:  r.LastName,
+		Username:  r.Username,
+		Alias: sql.NullString{
+			String: r.Alias,
+			Valid:  true,
+		},
+		Email:       r.Email,
+		Password:    encPass,
+		PhoneNumber: r.PhoneNumber,
+		BirthDate:   r.BirthDate,
+		Role:        int64(SystemUser),
 	}, nil
 }

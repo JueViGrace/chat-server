@@ -28,10 +28,10 @@ func newChatHandler(db data.ChatStore, validator *types.XValidator) *chatHandler
 	}
 }
 
-func (h *chatHandler) getChats(c *fiber.Ctx, data *types.AuthData) error {
+func (h *chatHandler) getChats(c *fiber.Ctx, data *types.Session) error {
 	return nil
 }
 
-func (h *chatHandler) getChat(c *fiber.Ctx, data *types.AuthData) error {
+func (h *chatHandler) getChat(c *fiber.Ctx, data *types.Session) error {
 	return nil
 }

@@ -29,8 +29,8 @@ type api struct {
 func New() Api {
 	return &api{
 		App: fiber.New(fiber.Config{
-			ServerHeader: "gps-tracker-server",
-			AppName:      "gps-tracker-server",
+			ServerHeader: "chat-server",
+			AppName:      "chat-server",
 			ErrorHandler: func(c *fiber.Ctx, err error) error {
 				res := types.RespondInternalServerError(nil, err.Error())
 				return c.Status(res.Status).JSON(res)
