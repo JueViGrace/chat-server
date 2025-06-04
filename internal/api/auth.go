@@ -18,9 +18,11 @@ func (a *api) authRoutes(api fiber.Router) {
 
 	group.Post("/login", handler.login)
 	group.Post("/signup", handler.signUp)
-	group.Post("/forgot/reset", handler.forgotPassReset)
+	group.Post("/forgot/confirm", handler.forgotPassConfirm)
 	group.Post("/forgot/request", handler.forgotPassRequest)
+	group.Post("/forgot/reset", handler.forgotPassReset)
 	group.Post("/refresh", a.authenticatedHandler(handler.refresh))
+	group.Post("/logout", a.authenticatedHandler(handler.logout))
 
 }
 
@@ -87,7 +89,22 @@ func (h *authHandler) refresh(c *fiber.Ctx, session *types.Session) error {
 	return c.Status(res.Status).JSON(res)
 }
 
+func (h *authHandler) forgotPassConfirm(c *fiber.Ctx) error {
+	res := new(types.APIResponse)
+
+	res = types.RespondAccepted("not yet implemented", "Success")
+	return c.Status(res.Status).JSON(res)
+}
+
 func (h *authHandler) forgotPassReset(c *fiber.Ctx) error {
+	res := new(types.APIResponse)
+
+	res = types.RespondAccepted("not yet implemented", "Success")
+	return c.Status(res.Status).JSON(res)
+}
+
+// TODO: make correct type for this request
+func (h *authHandler) forgotPassRequest(c *fiber.Ctx) error {
 	res := new(types.APIResponse)
 	r := new(types.RecoverPasswordRequest)
 
@@ -107,22 +124,9 @@ func (h *authHandler) forgotPassReset(c *fiber.Ctx) error {
 	return c.Status(res.Status).JSON(res)
 }
 
-func (h *authHandler) forgotPassRequest(c *fiber.Ctx) error {
+func (h *authHandler) logout(c *fiber.Ctx, session *types.Session) error {
 	res := new(types.APIResponse)
-	r := new(types.RecoverPasswordRequest)
 
-	err := types.ParseRequest(h.validator, c, r)
-	if err != nil {
-		res = types.RespondBadRequest(nil, err.Error())
-		return c.Status(res.Status).JSON(res)
-	}
-
-	msg, err := h.db.RecoverPassword(r)
-	if err != nil {
-		res = types.RespondBadRequest(nil, err.Error())
-		return c.Status(res.Status).JSON(res)
-	}
-
-	res = types.RespondAccepted(msg, "Success")
+	res = types.RespondAccepted("not yet implemented", "Success")
 	return c.Status(res.Status).JSON(res)
 }

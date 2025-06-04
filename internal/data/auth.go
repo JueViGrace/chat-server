@@ -110,6 +110,7 @@ func (s *authStore) LogIn(r *types.SignInRequest) (*types.AuthResponse, error) {
 	}
 
 	tokens = &types.AuthResponse{
+		ID:           session.ID,
 		AccessToken:  session.AccessToken,
 		RefreshToken: session.RefreshToken,
 	}
@@ -165,6 +166,7 @@ func (s *authStore) SignUp(r *types.SignUpRequest) (*types.AuthResponse, error) 
 	}
 
 	tokens = &types.AuthResponse{
+		ID:           session.ID,
 		AccessToken:  session.AccessToken,
 		RefreshToken: session.RefreshToken,
 	}
@@ -189,6 +191,7 @@ func (s *authStore) Refresh(session *types.Session) (*types.AuthResponse, error)
 	}
 
 	tokens = &types.AuthResponse{
+		ID:           session.ID,
 		AccessToken:  newSession.AccessToken,
 		RefreshToken: newSession.RefreshToken,
 	}

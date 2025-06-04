@@ -19,8 +19,9 @@ type Session struct {
 }
 
 type AuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	ID           uuid.UUID `json:"id"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
 }
 
 type SignInRequest struct {
@@ -36,7 +37,6 @@ type SignUpRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required"`
 	PhoneNumber string `json:"phone_number" validate:"required"`
-	BirthDate   string `json:"birth_date" validate:"required"`
 }
 
 type RecoverPasswordRequest struct {
@@ -85,7 +85,6 @@ func CreateUser(r *SignUpRequest) (*database.CreateUserParams, error) {
 		Email:       r.Email,
 		Password:    encPass,
 		PhoneNumber: r.PhoneNumber,
-		BirthDate:   r.BirthDate,
 		Role:        int64(SystemUser),
 	}, nil
 }
