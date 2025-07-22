@@ -68,8 +68,8 @@ func (s *authStore) LogIn(r *types.SignInRequest) (*types.AuthResponse, error) {
 	session := new(types.Session)
 
 	user, err := s.queries.GetUser(s.ctx, database.GetUserParams{
-		Email:    r.Email,
-		Username: r.Email,
+		Email:    r.Username,
+		Username: r.Username,
 	})
 	if err != nil {
 		return nil, err
